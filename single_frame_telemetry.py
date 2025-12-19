@@ -10,6 +10,8 @@ import time
 import math
 import sys
 
+from helpers import parse_telemetry_line
+
 # Configuration
 BAUD_RATE = 115200
 
@@ -116,43 +118,6 @@ def draw_horizon(roll, pitch):
     
     print("  " + "─" * width)
 
-def parse_telemetry_line(line):
-    """Parse the telemetry line from Arduino"""
-    # Expected format: 
-    # 0. 50 | 2.3 | -1.5 | 0.0 | 0.01 | -0.02 | 0.00 | 0.12 | -0.05 | 9.78 | NOML
-    
-    try:
-        parts = [p.strip() for p in line.split('|')]
-        
-        if len(parts) >= 11:
-            time_s = float(parts[0])
-            roll = float(parts[1])
-            pitch = float(parts[2])
-            yaw = float(parts[3])
-            roll_rate = float(parts[4])
-            pitch_rate = float(parts[5])
-            yaw_rate = float(parts[6])
-            accel_x = float(parts[7])
-            accel_y = float(parts[8])
-            accel_z = float(parts[9])
-            mode = parts[10]. strip()
-            
-            return {
-                'time': time_s,
-                'roll': roll,
-                'pitch': pitch,
-                'yaw': yaw,
-                'roll_rate':  roll_rate,
-                'pitch_rate': pitch_rate,
-                'yaw_rate': yaw_rate,
-                'accel_x': accel_x,
-                'accel_y': accel_y,
-                'accel_z': accel_z,
-                'mode':  mode
-            }
-    except (ValueError, IndexError):
-        return None
-
 def main():
     print("Flight Computer Ground Station")
     print("=" * 60)
@@ -175,7 +140,7 @@ def main():
         while True:
             if ser.in_waiting:
                 line = ser.readline().decode('utf-8', errors='ignore').strip()
-                
+                print(f"Received: {line}")
                 # Parse telemetry
                 data = parse_telemetry_line(line)
                 
